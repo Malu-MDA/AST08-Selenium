@@ -1,0 +1,63 @@
+﻿name: AST08 - Selenium CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  selenium:
+    name: Executar automação Selenium
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v7
+
+      - name: Configurar Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Verificar navegador
+        run: |
+          google-chrome --version
+          chromedriver --version
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Verificar sintaxe
+        run: python -m py_compile ast08.py
+
+      - name: Executar e validar a automação
+        shell: bash
+        run: |
+          set -o pipefail
+          python ast08.py | tee resultado.txt
+
+          grep -Fq "Valor selecionado: 1" resultado.txt
+          grep -Fq "Texto encontrado: Hello World!" resultado.txt
+          grep -Fq "Texto do link:" resultado.txt
+          grep -Fq "Destino do link:" resultado.txt
+          test -s evidencia_wiki.png
+
+      - name: Guardar evidências
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: evidencias-ast08
+          path: |
+            evidencia_wiki.png
+            erro_dynamic_loading.png
+            resultado.txt
+          if-no-files-found: ignore
+          retention-days: 7

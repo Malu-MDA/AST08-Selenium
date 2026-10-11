@@ -1,0 +1,8 @@
+﻿.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.idea/
+.vscode/
+erro_dynamic_loading.png
+resultado.txt
